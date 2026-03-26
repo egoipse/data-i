@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale-1.0">
+    <title>Cuenta Regresiva</title>
+    <!-- 
+      CSS en línea para cumplir con el requisito de un solo archivo.
+      Como diseñador senior, prefiero un enfoque limpio y minimalista.
+    -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            background-color: #325D88;
+            color: #F8F5F0;;
+            font-family: -apple-system, BlinkMacSystemFont, "Public Sans", Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* * El canvas de partículas se posicionará como fondo fijo, 
+         * detrás de todo el contenido.
+         */
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            /* Evita que el canvas capture eventos del mouse */
+            pointer-events: none; 
+        }
+
+        /* * El contenedor principal centrará el reloj usando flexbox.
+         * Se coloca en una capa superior (z-index: 2).
+         */
+        .container {
+            margin-top: 80px;
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            font-weight: 500;
+            font-size: 3rem;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+            opacity: 0.9;
+            color: #F8F5F0;
+            font-family: "Montserrat", Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* * Estilo del reloj de cuenta atrás.
+         * Usamos flexbox para que se adapte bien en móviles y escritorio.
+         */
+        #countdown {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap; /* Para que se ajuste en pantallas pequeñas */
+        }
+
+        #countdown div {
+            margin: 10px 20px;
+            min-width: 100px;
+        }
+
+        /* Los números grandes (Días, Horas, etc.) */
+        #countdown div h2 {
+            font-size: 4.5rem; /* Tamaño de fuente grande para impacto */
+            font-weight: 200; /* Un peso ligero se ve más elegante */
+            margin: 0;
+            line-height: 1;
+            /* Añadimos una sutil sombra de texto para dar profundidad */
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            color: #F8F5F0;
+        }
+
+        /* Las etiquetas (Días, Horas, etc.) */
+        #countdown div span {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.8;
+            color: #F8F5F0;
+        }
+        
+        /* Mensaje final cuando el contador llega a cero */
+        #final-message {
+            font-size: 3rem;
+            font-weight: 300;
+            display: none; /* Oculto por defecto */
+        }
+        
+        #logo {
+          position: absolute;
+          top: 10px;
+          left: 50%; 
+          transform: translateX(-50%)
+        }
+    </style>
+</head>
+<body>
+
+    <!-- El lienzo (Canvas) para el efecto de partículas -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- El contenedor para el contenido centrado -->
+    <div class="container">
+        <h1>Se vienen cositas en...</h1>
+        <div id="countdown">
+            <div>
+                <h2 id="days">00</h2>
+                <span>Días</span>
+            </div>
+            <div>
+                <h2 id="hours">00</h2>
+                <span>Horas</span>
+            </div>
+            <div>
+                <h2 id="minutes">00</h2>
+                <span>Minutos</span>
+            </div>
+            <div>
+                <h2 id="seconds">00</h2>
+                <span>Segundos</span>
+            </div>
+        </div>
+        <!-- Este mensaje se mostrará cuando la cuenta llegue a cero -->
+        <div id="final-message">
+            ¡El momento ha llegado!
+        </div>
+        
+        <br><br>
+        
+        <div>
+          <a href="mailto:contacto@data-i.dev">
+              <!-- <svg width="64px" height="64px" viewBox="-2.4 -2.4 28.80 28.80" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff"><g id="SVGRepo_bgCarrier" stroke-width="0"><rect x="-2.4" y="-2.4" width="28.80" height="28.80" rx="14.4" fill="#ffffff" strokewidth="0"></rect></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M4 7.00005L10.2 11.65C11.2667 12.45 12.7333 12.45 13.8 11.65L20 7" stroke="#000000" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path> <rect x="3" y="5" width="18" height="14" rx="2" stroke="#000000" stroke-width="1" stroke-linecap="round"></rect> </g></svg> -->
+              <svg width="64px" height="64px" viewBox="-2.4 -2.4 28.80 28.80" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#F8F5F0"><g id="SVGRepo_bgCarrier" stroke-width="0"><rect x="-2.4" y="-2.4" width="28.80" height="28.80" rx="14.4"  strokewidth="0"></rect></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M4 7.00005L10.2 11.65C11.2667 12.45 12.7333 12.45 13.8 11.65L20 7" stroke="#F8F5F0" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path> <rect x="3" y="5" width="18" height="14" rx="2" stroke="#F8F5F0" stroke-width="1" stroke-linecap="round"></rect> </g></svg>
+          </a>
+        </div>
+        
+    </div>
+
+    <div id="logo">
+      <svg width="313" height="150" viewBox="0 0 313 150" xmlns="http://www.w3.org/2000/svg">
+        <!-- <rect width="313" height="150" fill="#3E3F3A" /> -->
+        
+        <text x="40" y="105" font-family="Montserrat, sans-serif" font-size="70" font-weight="bold" fill="#F8F5F0">data</text>
+        
+        <g transform="translate(230, 0)">
+          <rect x="15" y="60" width="18" height="45" rx="2" fill="#8E8C84" />    
+          <circle cx="24" cy="32" r="12" fill="#325D88" stroke="#F8F5F0" stroke-width="5" />
+        </g>
+      </svg>
+    </div>
+
+    
+
+    <!-- 
+      JavaScript en línea para cumplir con el requisito de un solo archivo.
+      Dividido en dos secciones: Lógica de la cuenta atrás y Lógica de las partículas.
+    -->
+    <script>
+        /**
+         * SECCIÓN 1: LÓGICA DE LA CUENTA ATRÁS
+         */
+        
+        // Función para añadir un cero delante si el número es menor de 10
+        function pad(num) {
+            return num < 10 ? '0' + num : num;
+        }
+
+        function startCountdown() {
+            // Definimos la fecha objetivo: 2 de Diciembre de 2025, 12:00:00, UTC-3
+            // El formato YYYY-MM-DDTHH:mm:ss-03:00 es estándar y robusto.
+            const targetDateStr = "2026-04-02T11:00:00-03:00";
+            const targetDate = new Date(targetDateStr).getTime();
+
+            // Referencias a los elementos del DOM
+            const elDays = document.getElementById('days');
+            const elHours = document.getElementById('hours');
+            const elMinutes = document.getElementById('minutes');
+            const elSeconds = document.getElementById('seconds');
+            
+            const elCountdown = document.getElementById('countdown');
+            const elFinalMessage = document.getElementById('final-message');
+            const elTitle = document.querySelector('.container h1');
+
+            const interval = setInterval(() => {
+                const now = new Date().getTime();
+                const distance = targetDate - now;
+
+                // Si la fecha objetivo ha pasado
+                if (distance < 0) {
+                    clearInterval(interval);
+                    // Ocultamos el reloj y el título
+                    elCountdown.style.display = 'none';
+                    elTitle.style.display = 'none';
+                    // Mostramos el mensaje final
+                    elFinalMessage.style.display = 'block';
+                    return;
+                }
+
+                // Cálculos de tiempo
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                // Actualizamos el HTML
+                elDays.innerText = pad(days);
+                elHours.innerText = pad(hours);
+                elMinutes.innerText = pad(minutes);
+                elSeconds.innerText = pad(seconds);
+
+            }, 1000);
+        }
+
+        /**
+         * SECCIÓN 2: LÓGICA DEL EFECTO DE PARTÍCULAS (Canvas)
+         */
+
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        // Ajusta el tamaño del canvas a la ventana
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        // Clase para definir una Partícula
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 1; // Tamaño de 1 a 3 px
+                this.speedX = Math.random() * 1 - 0.5; // Movimiento horizontal lento
+                this.speedY = Math.random() * 1 - 0.5; // Movimiento vertical lento
+                this.color = 'rgba(255, 255, 255, 0.8)';
+            }
+
+            // Actualiza la posición de la partícula
+            update() {
+                // Manejo de colisión con los bordes
+                if (this.x > canvas.width || this.x < 0) {
+                    this.speedX = -this.speedX;
+                }
+                if (this.y > canvas.height || this.y < 0) {
+                    this.speedY = -this.speedY;
+                }
+                // Mueve la partícula
+                this.x += this.speedX;
+                this.y += this.speedY;
+            }
+
+            // Dibuja la partícula
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Inicializa el array de partículas
+        function initParticles() {
+            particles = [];
+            // Ajustamos la cantidad de partículas según el ancho de la pantalla
+            let particleCount = (canvas.width * canvas.height) / 9000; 
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        // Dibuja las líneas que conectan las partículas
+        function connectParticles() {
+            let opacity;
+            const maxDistance = 100; // Distancia máxima para conectar
+
+            for (let a = 0; a < particles.length; a++) {
+                for (let b = a; b < particles.length; b++) {
+                    let dx = particles[a].x - particles[b].x;
+                    let dy = particles[a].y - particles[b].y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < maxDistance) {
+                        // La opacidad de la línea disminuye con la distancia
+                        opacity = 1 - (distance / maxDistance);
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[a].x, particles[a].y);
+                        ctx.lineTo(particles[b].x, particles[b].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        // Bucle de animación
+        function animate() {
+            // Limpiamos el canvas en cada fotograma
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Actualizamos y dibujamos cada partícula
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw();
+            });
+
+            // Dibujamos las conexiones
+            connectParticles();
+
+            // Solicitamos el próximo fotograma
+            requestAnimationFrame(animate);
+        }
+
+        // --- INICIALIZACIÓN ---
+
+        // Configura el canvas y las partículas al cargar y al redimensionar
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initParticles();
+        });
+
+        // Ejecutar todo
+        resizeCanvas();
+        initParticles();
+        animate();
+        startCountdown();
+
+    </script>
+</body>
+</html>
